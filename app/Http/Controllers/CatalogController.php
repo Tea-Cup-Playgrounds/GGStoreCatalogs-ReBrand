@@ -8,6 +8,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Vinkla\Hashids\Facades\Hashids;
 
 class CatalogController extends Controller
 {
@@ -24,14 +25,16 @@ class CatalogController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
 
-        // Category filter
-        if ($categorySlug = $request->input('category')) {
-            $query->whereHas('category', fn ($q) => $q->where('slug', $categorySlug));
+        // Category filter — accepts comma-separated slugs
+        $categorySlugs = array_filter(explode(',', $request->input('category', '')));
+        if (count($categorySlugs)) {
+            $query->whereHas('category', fn ($q) => $q->whereIn('slug', $categorySlugs));
         }
 
-        // Brand filter
-        if ($brandSlug = $request->input('brand')) {
-            $query->whereHas('brand', fn ($q) => $q->where('slug', $brandSlug));
+        // Brand filter — accepts comma-separated slugs
+        $brandSlugs = array_filter(explode(',', $request->input('brand', '')));
+        if (count($brandSlugs)) {
+            $query->whereHas('brand', fn ($q) => $q->whereIn('slug', $brandSlugs));
         }
 
         // Promo filter
@@ -53,22 +56,21 @@ class CatalogController extends Controller
             default      => $query->orderByDesc('created_at'),
         };
 
-        $products = $query->paginate(20)->withQueryString();
-
+        $products   = $query->paginate(20)->withQueryString();
         $categories = Category::orderBy('name')->get(['id', 'name', 'slug']);
         $brands     = Brand::orderBy('name')->get(['id', 'name', 'slug']);
 
         return Inertia::render('Catalog', [
-            'products'   => $products->through(fn (Product $p) => [
-                'id'              => $p->id,
-                'name'            => $p->name,
-                'slug'            => $p->slug,
-                'price'           => $p->price,
-                'promo_price'     => $p->promo_price,
+            'products' => $products->through(fn (Product $p) => [
+                'hash'          => Hashids::encode($p->id),
+                'name'          => $p->name,
+                'slug'          => $p->slug,
+                'price'         => $p->price,
+                'promo_price'   => $p->promo_price,
                 'is_promo_active' => $p->is_promo_active,
-                'first_photo'     => $p->photos->first()?->photo_url,
-                'brand_name'      => $p->brand?->name,
-                'category_name'   => $p->category?->name,
+                'first_photo'   => $p->photos->first()?->photo_url,
+                'brand_name'    => $p->brand?->name,
+                'category_name' => $p->category?->name,
             ]),
             'categories' => $categories,
             'brands'     => $brands,

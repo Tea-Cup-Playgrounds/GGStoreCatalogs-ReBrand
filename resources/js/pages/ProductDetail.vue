@@ -3,6 +3,7 @@ import ProductCard from '@/components/catalog/ProductCard.vue';
 import PriceDisplay from '@/components/shared/PriceDisplay.vue';
 import GuestLayout from '@/layouts/GuestLayout.vue';
 import { useWishlist } from '@/composables/useWishlist';
+import { breadcrumbSchema, productSchema, useStructuredData } from '@/composables/useStructuredData';
 import { Head, Link } from '@inertiajs/vue3';
 import { ChevronRight, Heart } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -18,6 +19,7 @@ interface Photo { id: number; photo_url: string }
 
 interface Product {
     id: number;
+    hash: string;
     name: string;
     slug: string;
     description: string | null;
@@ -36,7 +38,7 @@ interface Product {
 }
 
 interface RelatedProduct {
-    id: number;
+    hash: string;
     name: string;
     slug: string;
     price: number;
@@ -49,7 +51,20 @@ interface RelatedProduct {
 const props = defineProps<{ product: Product; related: RelatedProduct[] }>();
 
 const { isWishlisted, toggle } = useWishlist();
-const wishlisted = isWishlisted(props.product.id);
+const wishlisted = isWishlisted(props.product.hash);
+
+// Structured data
+useStructuredData([
+    productSchema(props.product),
+    breadcrumbSchema([
+        { name: 'Home', url: `${window.location.origin}/` },
+        { name: 'Katalog', url: `${window.location.origin}/catalog` },
+        ...(props.product.category_name
+            ? [{ name: props.product.category_name, url: `${window.location.origin}/catalog?category=${props.product.category_slug}` }]
+            : []),
+        { name: props.product.name, url: `${window.location.origin}/product/${props.product.hash}` },
+    ]),
+]);
 
 // Gallery
 const thumbsSwiper = ref<SwiperType | null>(null);
@@ -73,6 +88,14 @@ const descText = computed(() =>
     <Head>
         <title>{{ product.name }} — GG Case Store</title>
         <meta name="description" :content="`${product.description?.slice(0, 150) ?? product.name}. Beli di Tokopedia atau Shopee.`" />
+        <link rel="canonical" :href="`/product/${product.hash}`" />
+        <meta property="og:type" content="product" />
+        <meta property="og:title" :content="`${product.name} — GG Case Store`" />
+        <meta property="og:description" :content="product.description?.slice(0, 150) ?? product.name" />
+        <meta v-if="product.photos[0]" property="og:image" :content="product.photos[0].photo_url" />
+        <meta property="og:url" :content="`/product/${product.hash}`" />
+        <meta property="product:price:amount" :content="String(product.is_promo_active && product.promo_price ? product.promo_price : product.price)" />
+        <meta property="product:price:currency" content="IDR" />
     </Head>
 
     <GuestLayout>
@@ -182,7 +205,7 @@ const descText = computed(() =>
                             <button
                                 class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border transition-colors hover:border-red-400 sm:hidden"
                                 :aria-label="wishlisted ? 'Hapus dari wishlist' : 'Tambah ke wishlist'"
-                                @click="toggle(product.id)"
+                                @click="toggle(product.hash)"
                             >
                                 <Heart
                                     :size="18"
@@ -241,7 +264,7 @@ const descText = computed(() =>
                         <button
                             class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border transition-colors hover:border-red-400 sm:flex"
                             :aria-label="wishlisted ? 'Hapus dari wishlist' : 'Tambah ke wishlist'"
-                            @click="toggle(product.id)"
+                            @click="toggle(product.hash)"
                         >
                             <Heart
                                 :size="20"
@@ -282,8 +305,8 @@ const descText = computed(() =>
                 <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     <ProductCard
                         v-for="p in related"
-                        :key="p.id"
-                        :id="p.id"
+                        :key="p.hash"
+                        :hash="p.hash"
                         :name="p.name"
                         :slug="p.slug"
                         :price="p.price"
@@ -302,16 +325,29 @@ const descText = computed(() =>
 <style scoped>
 .gallery-main :deep(.swiper-button-next),
 .gallery-main :deep(.swiper-button-prev) {
-    color: white;
-    background: rgba(0, 0, 0, 0.35);
-    width: 32px;
-    height: 32px;
+    color: rgba(255, 255, 255, 0.92);
+    background: rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(8px) saturate(1.4);
+    -webkit-backdrop-filter: blur(8px) saturate(1.4);
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
+    border: 0.5px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    transition: background 0.15s ease, transform 0.1s ease;
+    top: 50%;
+    margin-top: -11px;
+}
+.gallery-main :deep(.swiper-button-next):active,
+.gallery-main :deep(.swiper-button-prev):active {
+    background: rgba(0, 0, 0, 0.38);
+    transform: scale(0.92);
 }
 .gallery-main :deep(.swiper-button-next::after),
 .gallery-main :deep(.swiper-button-prev::after) {
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 .gallery-thumbs :deep(.swiper-slide-thumb-active) {
     border-color: hsl(var(--primary));

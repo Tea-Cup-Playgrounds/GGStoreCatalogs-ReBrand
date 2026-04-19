@@ -5,7 +5,7 @@ import { Link } from '@inertiajs/vue3';
 import { Heart } from 'lucide-vue-next';
 
 const props = defineProps<{
-    id: number;
+    hash: string;
     name: string;
     slug: string;
     price: number;
@@ -16,7 +16,7 @@ const props = defineProps<{
 }>();
 
 const { isWishlisted, toggle } = useWishlist();
-const wishlisted = isWishlisted(props.id);
+const wishlisted = isWishlisted(props.hash);
 </script>
 
 <template>
@@ -25,7 +25,7 @@ const wishlisted = isWishlisted(props.id);
         <button
             class="absolute right-2 top-2 z-10 rounded-full bg-white/80 p-1.5 backdrop-blur-sm transition-colors hover:bg-white"
             :aria-label="wishlisted ? 'Hapus dari wishlist' : 'Tambah ke wishlist'"
-            @click.prevent="toggle(id)"
+            @click.prevent="toggle(hash)"
         >
             <Heart
                 :size="16"
@@ -41,7 +41,7 @@ const wishlisted = isWishlisted(props.id);
             Promo
         </span>
 
-        <Link :href="route('product.show', { id: `${id}-${slug}` })">
+        <Link :href="route('product.show', { hash })">
             <!-- Image -->
             <div class="aspect-square overflow-hidden bg-muted">
                 <img

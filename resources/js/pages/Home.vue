@@ -5,9 +5,10 @@ import GuestLayout from '@/layouts/GuestLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { ChevronRight } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
-import { Autoplay, Pagination } from 'swiper/modules';
+import { Autoplay, Grid, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
+import 'swiper/css/grid';
 import 'swiper/css/pagination';
 
 interface Banner {
@@ -26,7 +27,7 @@ interface Category {
 }
 
 interface Product {
-    id: number;
+    hash: string;
     name: string;
     slug: string;
     price: number;
@@ -43,7 +44,7 @@ const props = defineProps<{
     newestProducts: Product[];
 }>();
 
-const modules = [Autoplay, Pagination];
+const modules = [Autoplay, Grid, Pagination];
 const loading = ref(true);
 
 onMounted(() => {
@@ -54,10 +55,12 @@ onMounted(() => {
 <template>
     <Head>
         <title>GG Case Store — Aksesoris HP & Gadget Terlengkap di Samarinda</title>
-        <meta
-            name="description"
-            content="Toko aksesoris HP, earphone, charger, casing, dan kartu memori terpercaya di Samarinda. Cek katalog produk GG Case Store."
-        />
+        <meta name="description" content="Toko aksesoris HP, earphone, charger, casing, dan kartu memori terpercaya di Samarinda. Cek katalog produk GG Case Store." />
+        <link rel="canonical" href="/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="GG Case Store — Aksesoris HP & Gadget Terlengkap di Samarinda" />
+        <meta property="og:description" content="Toko aksesoris HP, earphone, charger, casing, dan kartu memori terpercaya di Samarinda." />
+        <meta property="og:url" content="/" />
     </Head>
 
     <GuestLayout>
@@ -96,43 +99,54 @@ onMounted(() => {
             <!-- ── Categories ── -->
             <section aria-label="Kategori produk">
                 <h2 class="mb-4 text-lg font-bold uppercase tracking-wide text-foreground">Kategori</h2>
-                <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
-                    <Link
-                        v-for="cat in categories"
-                        :key="cat.id"
-                        :href="`/catalog?category=${cat.slug}`"
-                        class="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary hover:shadow-md"
-                    >
-                        <!-- Square image area -->
-                        <div class="aspect-square w-full overflow-hidden bg-muted">
-                            <img
-                                v-if="cat.category_photo"
-                                :src="cat.category_photo"
-                                :alt="`Kategori ${cat.name}`"
-                                width="200"
-                                height="200"
-                                loading="lazy"
-                                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                            <div v-else class="flex h-full w-full items-center justify-center text-3xl">
-                                📦
+                <Swiper
+                    :modules="[Grid, Pagination]"
+                    :grid="{ rows: 2, fill: 'row' }"
+                    :slides-per-view="3"
+                    :space-between="12"
+                    :pagination="{ clickable: true }"
+                    :breakpoints="{
+                        640: { slidesPerView: 4, grid: { rows: 2, fill: 'row' }, spaceBetween: 12 },
+                        768: { slidesPerView: 6, grid: { rows: 2, fill: 'row' }, spaceBetween: 12 },
+                    }"
+                    class="category-swiper"
+                >
+                    <SwiperSlide v-for="cat in categories" :key="cat.id">
+                        <Link
+                            :href="`/catalog?category=${cat.slug}`"
+                            class="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary hover:shadow-md"
+                        >
+                            <!-- Square image area -->
+                            <div class="aspect-square w-full overflow-hidden bg-muted">
+                                <img
+                                    v-if="cat.category_photo"
+                                    :src="cat.category_photo"
+                                    :alt="`Kategori ${cat.name}`"
+                                    width="200"
+                                    height="200"
+                                    loading="lazy"
+                                    class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                                <div v-else class="flex h-full w-full items-center justify-center text-3xl">
+                                    📦
+                                </div>
                             </div>
-                        </div>
-                        <!-- Name label -->
-                        <div class="px-2 py-2 text-center">
-                            <span class="line-clamp-2 text-xs font-medium leading-tight text-foreground group-hover:text-primary">
-                                {{ cat.name }}
-                            </span>
-                        </div>
-                    </Link>
-                </div>
+                            <!-- Name label -->
+                            <div class="px-2 py-2 text-center">
+                                <span class="line-clamp-2 text-xs font-medium leading-tight text-foreground group-hover:text-primary">
+                                    {{ cat.name }}
+                                </span>
+                            </div>
+                        </Link>
+                    </SwiperSlide>
+                </Swiper>
             </section>
 
             <!-- ── Promo Products ── -->
             <section v-if="promoProducts.length > 0" aria-label="Produk yang sedang promo">
                 <div class="mb-4 flex items-center justify-between">
                     <h2 class="text-lg font-bold uppercase tracking-wide text-foreground">
-                        🔥 Produk yang Sedang Promo
+                        Produk yang Sedang Promo
                     </h2>
                     <Link
                         href="/catalog?promo=1"
@@ -149,8 +163,8 @@ onMounted(() => {
                     <template v-else>
                         <ProductCard
                             v-for="product in promoProducts"
-                            :key="product.id"
-                            :id="product.id"
+                            :key="product.hash"
+                            :hash="product.hash"
                             :name="product.name"
                             :slug="product.slug"
                             :price="product.price"
@@ -184,8 +198,8 @@ onMounted(() => {
                     <template v-else>
                         <ProductCard
                             v-for="product in newestProducts"
-                            :key="product.id"
-                            :id="product.id"
+                            :key="product.hash"
+                            :hash="product.hash"
                             :name="product.name"
                             :slug="product.slug"
                             :price="product.price"
@@ -205,5 +219,17 @@ onMounted(() => {
 <style scoped>
 .banner-swiper :deep(.swiper-pagination-bullet-active) {
     background: hsl(var(--primary));
+}
+
+.category-swiper :deep(.swiper-pagination-bullet-active) {
+    background: hsl(var(--primary));
+}
+
+.category-swiper :deep(.swiper-wrapper) {
+    padding-bottom: 2rem;
+}
+
+.category-swiper :deep(.swiper-pagination) {
+    bottom: 0;
 }
 </style>

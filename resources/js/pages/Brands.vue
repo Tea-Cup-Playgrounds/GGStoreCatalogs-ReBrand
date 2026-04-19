@@ -15,8 +15,13 @@ defineProps<{ brands: Brand[] }>();
 
 <template>
     <Head>
-        <title>Brands — GG Case Store</title>
-        <meta name="description" content="Temukan semua brand aksesoris HP dan gadget yang tersedia di GG Case Store Samarinda." />
+        <title>Brands — GG Case Store Samarinda</title>
+        <meta name="description" content="Temukan semua brand aksesoris HP dan gadget yang tersedia di GG Case Store Samarinda — Samsung, Xiaomi, Sandisk, dan lainnya." />
+        <link rel="canonical" href="/brands" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Brands — GG Case Store Samarinda" />
+        <meta property="og:description" content="Semua brand aksesoris HP dan gadget di GG Case Store Samarinda." />
+        <meta property="og:url" content="/brands" />
     </Head>
 
     <GuestLayout>

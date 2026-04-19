@@ -1,16 +1,22 @@
 <script setup lang="ts">
 import AppFooter from '@/components/shared/AppFooter.vue';
+import { localBusinessSchema, useStructuredData } from '@/composables/useStructuredData';
 import { useAppearance } from '@/composables/useAppearance';
+import { useWishlist } from '@/composables/useWishlist';
 import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Home, Moon, Search, ShoppingBag, Sun, Tag, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+
+useStructuredData(localBusinessSchema());
 
 const page = usePage();
 const searchOpen = ref(false);
 const searchQuery = ref('');
 const { appearance, updateAppearance } = useAppearance();
+const { wishlist } = useWishlist();
 
 const isDark = computed(() => appearance.value === 'dark');
+const wishlistCount = computed(() => wishlist.value.length);
 
 const toggleTheme = () => updateAppearance(isDark.value ? 'light' : 'dark');
 
@@ -90,8 +96,14 @@ const submitSearch = () => {
                     </button>
 
                     <!-- Wishlist -->
-                    <Link href="/wishlist" class="rounded-full p-2 hover:bg-muted" aria-label="Wishlist">
+                    <Link href="/wishlist" class="relative rounded-full p-2 hover:bg-muted" aria-label="Wishlist">
                         <ShoppingBag :size="20" />
+                        <span
+                            v-if="wishlistCount > 0"
+                            class="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white"
+                        >
+                            {{ wishlistCount > 99 ? '99+' : wishlistCount }}
+                        </span>
                     </Link>
                 </div>
             </div>
@@ -136,10 +148,18 @@ const submitSearch = () => {
                 </Link>
                 <Link
                     href="/wishlist"
-                    class="flex flex-col items-center gap-0.5 px-4 py-1 text-xs text-muted-foreground transition-colors"
+                    class="relative flex flex-col items-center gap-0.5 px-4 py-1 text-xs text-muted-foreground transition-colors"
                     :class="{ 'text-primary font-semibold': page.url === '/wishlist' }"
                 >
-                    <ShoppingBag :size="20" />
+                    <span class="relative">
+                        <ShoppingBag :size="20" />
+                        <span
+                            v-if="wishlistCount > 0"
+                            class="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white"
+                        >
+                            {{ wishlistCount > 99 ? '99+' : wishlistCount }}
+                        </span>
+                    </span>
                     Wishlist
                 </Link>
             </div>

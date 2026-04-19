@@ -1,16 +1,31 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="id">
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="index, follow" />
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        {{-- Canonical is set per-page via Inertia <Head>, but provide a safe default --}}
+        <link rel="canonical" href="{{ url()->current() }}" />
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+        {{-- Favicon --}}
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+        {{-- Default OG fallbacks (overridden per-page via Inertia <Head>) --}}
+        <meta property="og:site_name" content="GG Case Store" />
+        <meta property="og:locale" content="id_ID" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="{{ asset('images/logoCatalog.png') }}" />
+        <meta name="twitter:card" content="summary_large_image" />
+
+        {{-- hreflang --}}
+        <link rel="alternate" hreflang="id" href="{{ url('/') }}" />
+        <link rel="alternate" hreflang="x-default" href="{{ url('/') }}" />
+
+        <title inertia>{{ config('app.name', 'GG Case Store') }}</title>
 
         @routes
-        @vite(['resources/js/app.ts'])
+        @vite(['resources/css/app.css', 'resources/js/app.ts'])
         @inertiaHead
     </head>
     <body class="font-sans antialiased">

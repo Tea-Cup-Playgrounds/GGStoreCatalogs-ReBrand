@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use Inertia\Inertia;
 use Inertia\Response;
+use Vinkla\Hashids\Facades\Hashids;
 
 class HomeController extends Controller
 {
@@ -37,9 +38,9 @@ class HomeController extends Controller
             ->get();
 
         return Inertia::render('Home', [
-            'banners'        => $banners,
-            'categories'     => $categories,
-            'promoProducts'  => $this->formatProducts($promoProducts),
+            'banners' => $banners,
+            'categories' => $categories,
+            'promoProducts' => $this->formatProducts($promoProducts),
             'newestProducts' => $this->formatProducts($newestProducts),
         ]);
     }
@@ -47,14 +48,14 @@ class HomeController extends Controller
     private function formatProducts($products): array
     {
         return $products->map(fn (Product $p) => [
-            'id'              => $p->id,
-            'name'            => $p->name,
-            'slug'            => $p->slug,
-            'price'           => $p->price,
-            'promo_price'     => $p->promo_price,
+            'hash' => Hashids::encode($p->id),
+            'name' => $p->name,
+            'slug' => $p->slug,
+            'price' => $p->price,
+            'promo_price' => $p->promo_price,
             'is_promo_active' => $p->is_promo_active,
-            'first_photo'     => $p->photos->first()?->photo_url,
-            'brand_name'      => $p->brand?->name,
+            'first_photo' => $p->photos->first()?->photo_url,
+            'brand_name' => $p->brand?->name,
         ])->toArray();
     }
 }
