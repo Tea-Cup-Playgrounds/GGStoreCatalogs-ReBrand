@@ -11,6 +11,10 @@
         {{-- Favicon --}}
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
+        {{-- Early connection hints for external origins --}}
+        <link rel="preconnect" href="{{ parse_url(config('app.url'), PHP_URL_SCHEME) . '://' . parse_url(config('app.url'), PHP_URL_HOST) }}" />
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+
         {{-- Default OG fallbacks (overridden per-page via Inertia <Head>) --}}
         <meta property="og:site_name" content="GG Case Store" />
         <meta property="og:locale" content="id_ID" />
